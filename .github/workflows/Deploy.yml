@@ -21,14 +21,23 @@ jobs:
         script: |
           cd cloudcomputing
           git pull origin main
-          
+
+          # Ensure system is up to date and install venv support
+          sudo apt update
+          sudo apt install -y python3-venv python3-pip
+
           # Create and activate virtual environment
-          python3 -m venv venv
-          source venv/bin/activate
+          python3 -m venv venv || true
+          if [ -d "venv" ]; then
+            source venv/bin/activate
+            pip install -r requirements.txt
+            nohup venv/bin/python app.py > log.txt 2>&1 &
+          else
+            # Fallback if venv failed (e.g., ensurepip missing or still blocked)
+            echo "⚠️ Virtualenv failed, installing packages with --break-system-packages"
+            pip install --break-system-packages -r requirements.txt
+            nohup python3 app.py > log.txt 2>&1 &
+          fi
 
-          # Install dependencies inside virtual environment
-          pip install -r requirements.txt
-
-          # Restart app
+          # Kill any existing app process (optional if app needs restart)
           pkill -f app.py || true
-          nohup venv/bin/python app.py &
