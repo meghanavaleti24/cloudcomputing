@@ -9,35 +9,17 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
+    - name: Checkout Code
       uses: actions/checkout@v3
 
-    - name: Deploy via SSH
+    - name: Deploy to EC2 via SSH
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.EC2_HOST }}
         username: ${{ secrets.EC2_USER }}
         key: ${{ secrets.EC2_SSH_KEY }}
         script: |
-          cd cloudcomputing
+          cd my-app
           git pull origin main
-
-          # Ensure system is up to date and install venv support
-          sudo apt update
-          sudo apt install -y python3-venv python3-pip
-
-          # Create and activate virtual environment
-          python3 -m venv venv || true
-          if [ -d "venv" ]; then
-            source venv/bin/activate
-            pip install -r requirements.txt
-            nohup venv/bin/python app.py > log.txt 2>&1 &
-          else
-            # Fallback if venv failed (e.g., ensurepip missing or still blocked)
-            echo "⚠️ Virtualenv failed, installing packages with --break-system-packages"
-            pip install --break-system-packages -r requirements.txt
-            nohup python3 app.py > log.txt 2>&1 &
-          fi
-
-          # Kill any existing app process (optional if app needs restart)
-          pkill -f app.py || true
+          npm install  # or pip install -r requirements.txt
+          pm2 restart app.js  # or restart the Flask app
