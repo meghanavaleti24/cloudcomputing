@@ -31,10 +31,10 @@ jobs:
         script: |
           echo "Stopping any existing Flask app"
           pkill -f app.py || true
-          
+
           echo "Navigating to cloudcomputing directory"
           cd ~/cloudcomputing || { echo "Directory not found"; exit 1; }
-          
+
           echo "Pulling latest code from GitHub"
           git pull origin main || { echo "Git pull failed"; exit 1; }
 
@@ -43,6 +43,3 @@ jobs:
 
           echo "Starting Flask app"
           nohup python3 app.py > output.log 2>&1 &
-
-          echo "Flask app started, displaying logs"
-          tail -f output.log
